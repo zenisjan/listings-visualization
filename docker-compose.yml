@@ -1,0 +1,16 @@
+services:
+  app:
+    build:
+      context: .
+    restart: always
+    ports:
+      - "172.17.0.1:3000:3000"
+    environment:
+      - PORT=3000
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT:-25432}
+      - DB_NAME=${DB_NAME:-bazos_scraper}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - APIFY_TOKEN=${APIFY_TOKEN:-}

@@ -1,0 +1,32 @@
+config:
+  runTime: "dockerCompose"
+
+environments:
+  - key: "DB_HOST"
+    value: "postgresql-v1mr4-u45404.vm.elestio.app"
+  - key: "DB_PORT"
+    value: "25432"
+  - key: "DB_NAME"
+    value: "bazos_scraper"
+  - key: "DB_USER"
+    value: "postgres"
+  - key: "DB_PASSWORD"
+    value: ""
+  - key: "SESSION_SECRET"
+    value: "random_password"
+  - key: "APIFY_TOKEN"
+    value: ""
+
+ports:
+  - protocol: "HTTPS"
+    targetProtocol: "HTTP"
+    listeningPort: "443"
+    targetPort: "3000"
+    targetIP: "172.17.0.1"
+    public: true
+    path: "/"
+    isAuth: false
+
+webUI:
+  - url: "https://[CI_CD_DOMAIN]/"
+    label: "Listings Map"

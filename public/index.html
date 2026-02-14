@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bazos Listings Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bazos Listings Map</h1>
+            <div class="header-actions">
+                <div class="page-actions">
+                    <div class="stats" id="stats">
+                        <span id="total-listings">Loading...</span>
+                    </div>
+                </div>
+                <div class="user-info" id="nav-container"></div>
+            </div>
+        </header>
+
+        <div class="controls">
+            <div class="search-section">
+                <input type="text" id="search-input" placeholder="Search listings...">
+                <button id="search-btn">Search</button>
+            </div>
+            
+            <div class="filters">
+                <select id="category-filter">
+                    <option value="">All Categories</option>
+                </select>
+                
+                <div class="price-range">
+                    <input type="number" id="price-min" placeholder="Min Price">
+                    <span>-</span>
+                    <input type="number" id="price-max" placeholder="Max Price">
+                </div>
+                
+                <input type="text" id="location-filter" placeholder="Location...">
+                
+                <select id="scraper-filter">
+                    <option value="">All Scrapers</option>
+                </select>
+                
+                <select id="change-filter">
+                    <option value="">All Listings</option>
+                    <option value="changed">Changed Listings Only</option>
+                    <option value="top">TOP Listings Only</option>
+                </select>
+                
+                <button id="clear-filters">Clear Filters</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="map-container">
+                <div id="map"></div>
+                <div class="map-controls">
+                    <button id="center-map">Center Map</button>
+                    <button id="toggle-clusters">Toggle Clusters</button>
+                </div>
+                <div class="map-legend">
+                    <h5>Legend:</h5>
+                    <div class="legend-item">
+                        <div class="legend-marker blue"></div>
+                        <span>Regular Listings</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-marker orange"></div>
+                        <span>TOP Listings</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-marker red"></div>
+                        <span>Changed Listings</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="listing-details" id="listing-details" style="display: none;">
+                <div class="details-header">
+                    <h3 id="details-title"></h3>
+                    <button id="close-details">×</button>
+                </div>
+                <div class="details-content">
+                    <div class="details-image">
+                        <img id="details-image" src="" alt="">
+                    </div>
+                    <div class="details-info">
+                        <p><strong>Price:</strong> <span id="details-price"></span></p>
+                        <p><strong>Category:</strong> <span id="details-category"></span></p>
+                        <p><strong>Location:</strong> <span id="details-location"></span></p>
+                        <p><strong>Views:</strong> <span id="details-views"></span></p>
+                        <p><strong>Date:</strong> <span id="details-date"></span></p>
+                        <p><strong>Last Scraped:</strong> <span id="details-last-scraped"></span></p>
+                        <p><strong>Contact:</strong> <span id="details-contact"></span></p>
+                        <p><strong>Phone:</strong> <span id="details-phone"></span></p>
+                        <p><strong>Description:</strong></p>
+                        <div id="details-description"></div>
+                        <a id="details-url" href="" target="_blank" class="view-listing-btn">View Original Listing</a>
+                    </div>
+                </div>
+                
+                <div class="change-history" id="change-history" style="display: none;">
+                    <h4>📊 Change History</h4>
+                    <div class="history-timeline" id="history-timeline">
+                        <!-- History items will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    <script src="/common.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
