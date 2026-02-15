@@ -141,4 +141,25 @@ GROUP BY l.scraper_name;
 -- =============================================================================
 CREATE INDEX IF NOT EXISTS idx_actor_runs_scraper_id ON actor_runs(scraper_id);
 
+-- =============================================================================
+-- Performance indexes for listing queries
+-- =============================================================================
+
+-- Speed up latest_listings view (DISTINCT ON + ORDER BY)
+CREATE INDEX IF NOT EXISTS idx_listings_id_scraper_scraped
+  ON listings(id, scraper_name, scraped_at DESC);
+
+-- Speed up LATERAL join and history queries
+CREATE INDEX IF NOT EXISTS idx_listings_url_scraper
+  ON listings(url, scraper_name);
+
+-- Speed up actor_runs JOIN in the view
+CREATE INDEX IF NOT EXISTS idx_actor_runs_run_id
+  ON actor_runs(run_id);
+
+-- Speed up coordinate filtering (map view)
+CREATE INDEX IF NOT EXISTS idx_listings_coords
+  ON listings(coordinates_lat, coordinates_lng)
+  WHERE coordinates_lat IS NOT NULL AND coordinates_lng IS NOT NULL;
+
 COMMIT;

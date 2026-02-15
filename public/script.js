@@ -27,10 +27,9 @@ class ListingsMap {
             await Promise.all([
                 this.loadCategories(),
                 this.loadScrapers(),
-                this.loadStats()
+                this.loadStats(),
+                this.loadListings()
             ]);
-
-            await this.loadListings();
             this.setupEventListeners();
         } catch (error) {
             console.error('Error during initialization:', error);

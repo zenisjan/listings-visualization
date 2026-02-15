@@ -3,6 +3,20 @@ const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
+// Simple TTL cache for categories and stats
+const cache = new Map();
+const CACHE_TTL = 2 * 60 * 1000; // 2 minutes
+
+function getCached(key) {
+  const entry = cache.get(key);
+  if (entry && Date.now() - entry.time < CACHE_TTL) return entry.data;
+  return null;
+}
+
+function setCache(key, data) {
+  cache.set(key, { data, time: Date.now() });
+}
+
 module.exports = (pool) => {
   router.get('/api/listings', requireAuth, async (req, res) => {
     try {
@@ -50,10 +64,13 @@ module.exports = (pool) => {
             WHEN prev.title IS NOT NULL AND prev.title != l.title THEN true
             ELSE false
           END as title_changed,
-          -- Count total versions
-          (SELECT COUNT(*) FROM listings l2 WHERE l2.url = l.url AND l2.scraper_name = l.scraper_name) as total_versions
+          COALESCE(vc.total_versions, 1) as total_versions
         FROM latest_listings l
           JOIN actor_runs ar ON l.run_id = ar.run_id
+          LEFT JOIN (
+            SELECT url, scraper_name, COUNT(*) as total_versions
+            FROM listings GROUP BY url, scraper_name
+          ) vc ON vc.url = l.url AND vc.scraper_name = l.scraper_name
           LEFT JOIN LATERAL (
             SELECT
               prev_l.price,
@@ -138,6 +155,10 @@ module.exports = (pool) => {
 
   router.get('/api/categories', requireAuth, async (req, res) => {
     try {
+      const cacheKey = `categories:${req.query.include_all || ''}`;
+      const cached = getCached(cacheKey);
+      if (cached) return res.json(cached);
+
       const coordsWhere = req.query.include_all === 'true'
         ? ''
         : 'WHERE coordinates_lat IS NOT NULL AND coordinates_lng IS NOT NULL';
@@ -148,6 +169,7 @@ module.exports = (pool) => {
         GROUP BY category
         ORDER BY count DESC
       `);
+      setCache(cacheKey, result.rows);
       res.json(result.rows);
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -213,6 +235,10 @@ module.exports = (pool) => {
 
   router.get('/api/stats', requireAuth, async (req, res) => {
     try {
+      const cacheKey = `stats:${req.query.include_all || ''}`;
+      const cached = getCached(cacheKey);
+      if (cached) return res.json(cached);
+
       const coordsWhere = req.query.include_all === 'true'
         ? ''
         : 'WHERE coordinates_lat IS NOT NULL AND coordinates_lng IS NOT NULL';
@@ -227,6 +253,7 @@ module.exports = (pool) => {
         FROM latest_listings
         ${coordsWhere}
       `);
+      setCache(cacheKey, result.rows[0]);
       res.json(result.rows[0]);
     } catch (error) {
       console.error('Error fetching stats:', error);
