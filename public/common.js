@@ -44,6 +44,9 @@ function renderNav(user) {
                     <span class="menu-icon">&#x1f465;</span><span class="menu-text">Users</span>
                 </a>` : ''}
                 <div class="menu-divider"></div>
+                <button class="menu-item" id="profile-btn">
+                    <span class="menu-icon">&#x1f464;</span><span class="menu-text">Profile</span>
+                </button>
                 <button class="menu-item logout-btn" id="logout-btn">
                     <span class="menu-icon">&#x1f6aa;</span><span class="menu-text">Logout</span>
                 </button>
@@ -74,6 +77,7 @@ async function checkAuth(options = {}) {
             return null;
         }
 
+        window.__currentUser = data.user;
         renderNav(data.user);
         initHamburgerMenu();
 
@@ -117,6 +121,15 @@ function initHamburgerMenu() {
             window.location.href = '/login';
         });
     }
+
+    const profileBtn = document.getElementById('profile-btn');
+    if (profileBtn) {
+        profileBtn.addEventListener('click', () => {
+            hamburgerBtn.classList.remove('active');
+            dropdownMenu.classList.remove('show');
+            openProfileModal();
+        });
+    }
 }
 
 /**
@@ -135,4 +148,121 @@ function showMessage(message, type) {
     container.appendChild(messageDiv);
 
     setTimeout(() => { messageDiv.remove(); }, 5000);
+}
+
+function openProfileModal() {
+    // Remove existing modal if any
+    const existing = document.getElementById('profileModal');
+    if (existing) existing.remove();
+
+    const user = window.__currentUser;
+    if (!user) return;
+
+    const modal = document.createElement('div');
+    modal.id = 'profileModal';
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Profile</h3>
+                <button class="close" id="close-profile">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="error-message" id="profile-modal-error" style="display: none;"></div>
+
+                <form id="profileForm">
+                    <div class="form-group">
+                        <label for="profileName">Full Name</label>
+                        <input type="text" id="profileName" value="${escapeHtml(user.name)}"
+                               placeholder="Your name">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="profileEmail">Email Address</label>
+                        <input type="email" id="profileEmail" value="${escapeHtml(user.email)}"
+                               placeholder="your@email.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="profileNewPassword">New Password</label>
+                        <input type="password" id="profileNewPassword"
+                               placeholder="Leave blank to keep current">
+                        <span class="form-hint">Leave blank to keep current password</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="profileCurrentPassword">Current Password *</label>
+                        <input type="password" id="profileCurrentPassword" required
+                               placeholder="Required to save changes">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancel-profile">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    document.getElementById('close-profile').addEventListener('click', closeProfileModal);
+    document.getElementById('cancel-profile').addEventListener('click', closeProfileModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeProfileModal();
+    });
+    document.getElementById('profileForm').addEventListener('submit', handleProfileSubmit);
+}
+
+function closeProfileModal() {
+    const modal = document.getElementById('profileModal');
+    if (modal) modal.remove();
+}
+
+async function handleProfileSubmit(e) {
+    e.preventDefault();
+
+    const data = {};
+    const name = document.getElementById('profileName').value.trim();
+    const email = document.getElementById('profileEmail').value.trim();
+    const newPassword = document.getElementById('profileNewPassword').value;
+    const currentPassword = document.getElementById('profileCurrentPassword').value;
+
+    if (!currentPassword) {
+        document.getElementById('profile-modal-error').textContent = 'Current password is required';
+        document.getElementById('profile-modal-error').style.display = 'block';
+        return;
+    }
+
+    data.currentPassword = currentPassword;
+    if (name) data.name = name;
+    if (email) data.email = email;
+    if (newPassword) data.password = newPassword;
+
+    try {
+        const response = await fetch('/api/profile', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            window.__currentUser = { ...window.__currentUser, ...result };
+            const userNameEl = document.getElementById('user-name');
+            if (userNameEl) userNameEl.textContent = result.name;
+            closeProfileModal();
+            showMessage('Profile updated successfully', 'success');
+        } else {
+            document.getElementById('profile-modal-error').textContent = result.error || 'Failed to update profile';
+            document.getElementById('profile-modal-error').style.display = 'block';
+        }
+    } catch (error) {
+        document.getElementById('profile-modal-error').textContent = 'Network error. Please try again.';
+        document.getElementById('profile-modal-error').style.display = 'block';
+    }
 }

@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const path = require('path');
-const { requireAdmin } = require('../middleware/auth');
+const { requireAuth, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -64,6 +64,124 @@ module.exports = (pool) => {
     } catch (error) {
       console.error('Error deleting user:', error);
       res.status(500).json({ error: 'Failed to delete user' });
+    }
+  });
+
+  // Self-service profile update (any logged-in user)
+  router.put('/api/profile', requireAuth, async (req, res) => {
+    try {
+      const { currentPassword, email, name, password } = req.body;
+
+      if (!currentPassword) {
+        return res.status(400).json({ error: 'Current password is required' });
+      }
+
+      // Verify current password
+      const userResult = await pool.query('SELECT password_hash FROM users WHERE id = $1', [req.session.userId]);
+      if (userResult.rows.length === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const valid = await bcrypt.compare(currentPassword, userResult.rows[0].password_hash);
+      if (!valid) {
+        return res.status(401).json({ error: 'Current password is incorrect' });
+      }
+
+      // Build dynamic UPDATE
+      const setClauses = [];
+      const values = [];
+      let paramIndex = 1;
+
+      if (email) {
+        setClauses.push(`email = $${paramIndex++}`);
+        values.push(email);
+      }
+      if (name) {
+        setClauses.push(`name = $${paramIndex++}`);
+        values.push(name);
+      }
+      if (password) {
+        setClauses.push(`password_hash = $${paramIndex++}`);
+        values.push(await bcrypt.hash(password, 10));
+      }
+
+      if (setClauses.length === 0) {
+        return res.status(400).json({ error: 'No fields to update' });
+      }
+
+      values.push(req.session.userId);
+      const result = await pool.query(
+        `UPDATE users SET ${setClauses.join(', ')} WHERE id = $${paramIndex} RETURNING id, email, name, role`,
+        values
+      );
+
+      const updated = result.rows[0];
+      req.session.email = updated.email;
+      req.session.name = updated.name;
+
+      res.json(updated);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      if (error.code === '23505') {
+        res.status(400).json({ error: 'Email already exists' });
+      } else {
+        res.status(500).json({ error: 'Failed to update profile' });
+      }
+    }
+  });
+
+  // Admin user edit (no current password needed)
+  router.put('/api/admin/users/:id', requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { email, name, password } = req.body;
+
+      const setClauses = [];
+      const values = [];
+      let paramIndex = 1;
+
+      if (email) {
+        setClauses.push(`email = $${paramIndex++}`);
+        values.push(email);
+      }
+      if (name) {
+        setClauses.push(`name = $${paramIndex++}`);
+        values.push(name);
+      }
+      if (password) {
+        setClauses.push(`password_hash = $${paramIndex++}`);
+        values.push(await bcrypt.hash(password, 10));
+      }
+
+      if (setClauses.length === 0) {
+        return res.status(400).json({ error: 'No fields to update' });
+      }
+
+      values.push(id);
+      const result = await pool.query(
+        `UPDATE users SET ${setClauses.join(', ')} WHERE id = $${paramIndex} RETURNING id, email, name, role`,
+        values
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // If admin edits their own account, update session
+      const updated = result.rows[0];
+      if (parseInt(id) === req.session.userId) {
+        req.session.email = updated.email;
+        req.session.name = updated.name;
+      }
+
+      res.json(updated);
+    } catch (error) {
+      console.error('Error updating user:', error);
+      if (error.code === '23505') {
+        res.status(400).json({ error: 'Email already exists' });
+      } else {
+        res.status(500).json({ error: 'Failed to update user' });
+      }
     }
   });
 

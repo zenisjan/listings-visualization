@@ -76,6 +76,47 @@
         </div>
     </div>
 
+    <!-- Edit User Modal -->
+    <div id="editUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit User</h3>
+                <button class="close" id="close-edit-user">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="error-message" id="edit-modal-error" style="display: none;"></div>
+
+                <form id="editUserForm">
+                    <input type="hidden" id="editUserId">
+
+                    <div class="form-group">
+                        <label for="editName">Full Name</label>
+                        <input type="text" id="editName" name="name"
+                               placeholder="John Doe">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editEmail">Email Address</label>
+                        <input type="email" id="editEmail" name="email"
+                               placeholder="user@example.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editPassword">New Password</label>
+                        <input type="password" id="editPassword" name="password"
+                               placeholder="Leave blank to keep current">
+                        <span class="form-hint">Leave blank to keep current password</span>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancel-edit-user">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="/common.js"></script>
     <script src="/admin.js"></script>
 </body>

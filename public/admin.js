@@ -13,9 +13,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('cancel-add-user').addEventListener('click', closeAddUserModal);
     document.getElementById('addUserForm').addEventListener('submit', handleAddUser);
 
+    document.getElementById('close-edit-user').addEventListener('click', closeEditUserModal);
+    document.getElementById('cancel-edit-user').addEventListener('click', closeEditUserModal);
+    document.getElementById('editUserForm').addEventListener('submit', handleEditUser);
+
     window.addEventListener('click', (e) => {
         if (e.target === document.getElementById('addUserModal')) {
             closeAddUserModal();
+        }
+        if (e.target === document.getElementById('editUserModal')) {
+            closeEditUserModal();
         }
     });
 });
@@ -69,6 +76,9 @@ function renderUsers() {
                         <td>${new Date(user.created_at).toLocaleDateString()}</td>
                         <td>${user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never'}</td>
                         <td>
+                            <button class="btn btn-sm" data-edit-user="${user.id}">
+                                Edit
+                            </button>
                             <button class="btn btn-danger btn-sm" data-delete-user="${user.id}"
                                     ${user.id === currentUserId ? 'disabled' : ''}>
                                 Delete
@@ -83,9 +93,14 @@ function renderUsers() {
     content.innerHTML = tableHTML;
 
     content.addEventListener('click', (e) => {
-        const btn = e.target.closest('[data-delete-user]');
-        if (btn && !btn.disabled) {
-            deleteUser(parseInt(btn.dataset.deleteUser));
+        const editBtn = e.target.closest('[data-edit-user]');
+        if (editBtn) {
+            openEditUserModal(parseInt(editBtn.dataset.editUser));
+            return;
+        }
+        const deleteBtn = e.target.closest('[data-delete-user]');
+        if (deleteBtn && !deleteBtn.disabled) {
+            deleteUser(parseInt(deleteBtn.dataset.deleteUser));
         }
     });
 }
@@ -132,6 +147,66 @@ async function handleAddUser(e) {
     } catch (error) {
         document.getElementById('modal-error').textContent = 'Network error. Please try again.';
         document.getElementById('modal-error').style.display = 'block';
+    }
+}
+
+function openEditUserModal(userId) {
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+
+    document.getElementById('editUserId').value = userId;
+    document.getElementById('editName').value = user.name;
+    document.getElementById('editEmail').value = user.email;
+    document.getElementById('editPassword').value = '';
+    document.getElementById('edit-modal-error').style.display = 'none';
+    document.getElementById('editUserModal').style.display = 'block';
+}
+
+function closeEditUserModal() {
+    document.getElementById('editUserModal').style.display = 'none';
+}
+
+async function handleEditUser(e) {
+    e.preventDefault();
+
+    const userId = document.getElementById('editUserId').value;
+    const data = {};
+
+    const name = document.getElementById('editName').value.trim();
+    const email = document.getElementById('editEmail').value.trim();
+    const password = document.getElementById('editPassword').value;
+
+    if (name) data.name = name;
+    if (email) data.email = email;
+    if (password) data.password = password;
+
+    if (Object.keys(data).length === 0) {
+        document.getElementById('edit-modal-error').textContent = 'No changes to save';
+        document.getElementById('edit-modal-error').style.display = 'block';
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/admin/users/${userId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            closeEditUserModal();
+            showMessage('User updated successfully', 'success');
+            await loadUsers();
+        } else {
+            document.getElementById('edit-modal-error').textContent = result.error || 'Failed to update user';
+            document.getElementById('edit-modal-error').style.display = 'block';
+        }
+    } catch (error) {
+        document.getElementById('edit-modal-error').textContent = 'Network error. Please try again.';
+        document.getElementById('edit-modal-error').style.display = 'block';
     }
 }
 
