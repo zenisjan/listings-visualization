@@ -63,6 +63,60 @@ header {
     align-items: center;
 }
 
+/* Logo */
+.logo-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--color-text-heading);
+    font-size: 1.5rem;
+    font-weight: 600;
+    transition: opacity 0.2s ease;
+}
+
+.logo-link:hover {
+    opacity: 0.8;
+}
+
+.logo-icon {
+    width: 36px;
+    height: 36px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.header-left .logo-link {
+    font-size: 1.1rem;
+    padding-right: 20px;
+    border-right: 1px solid var(--color-border);
+}
+
+.header-left .logo-icon {
+    width: 28px;
+    height: 28px;
+}
+
+.header-left h1 {
+    font-size: 1.5rem;
+}
+
+/* Login page logo */
+.logo-link-login {
+    justify-content: center;
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.logo-icon-login {
+    width: 48px;
+    height: 48px;
+}
+
 .header-actions {
     display: flex;
     align-items: center;
@@ -233,7 +287,8 @@ header {
 header h1 {
     color: var(--color-text-secondary);
     font-size: 1.5rem;
-    font-weight: 400;
+    font-weight: 600;
+    margin: 0;
 }
 
 .stats {
