@@ -6,7 +6,7 @@ const router = express.Router();
 module.exports = (pool) => {
   router.get('/api/listings', requireAuth, async (req, res) => {
     try {
-      const { category, price_min, price_max, location, search, scraper_name } = req.query;
+      const { category, price_min, price_max, location, search, scraper_name, include_all } = req.query;
 
       let query = `
         WITH latest_listings_with_changes AS (
@@ -68,58 +68,62 @@ module.exports = (pool) => {
             ORDER BY prev_ar.run_id DESC
             LIMIT 1
           ) prev ON true
-        WHERE l.coordinates_lat IS NOT NULL
-          AND l.coordinates_lng IS NOT NULL
+        -- CTE_WHERE_PLACEHOLDER
         )
         SELECT * FROM latest_listings_with_changes
       `;
 
       const params = [];
       let paramCount = 0;
-      let whereConditions = [];
+      const cteConditions = [];
+
+      if (include_all !== 'true') {
+        cteConditions.push('l.coordinates_lat IS NOT NULL AND l.coordinates_lng IS NOT NULL');
+      }
 
       if (category) {
         paramCount++;
-        whereConditions.push(`l.category = $${paramCount}`);
+        cteConditions.push(`l.category = $${paramCount}`);
         params.push(category);
       }
 
       if (price_min) {
         paramCount++;
-        whereConditions.push(`l.price >= $${paramCount}`);
+        cteConditions.push(`l.price >= $${paramCount}`);
         params.push(parseInt(price_min));
       }
 
       if (price_max) {
         paramCount++;
-        whereConditions.push(`l.price <= $${paramCount}`);
+        cteConditions.push(`l.price <= $${paramCount}`);
         params.push(parseInt(price_max));
       }
 
       if (location) {
         paramCount++;
-        whereConditions.push(`l.location ILIKE $${paramCount}`);
+        cteConditions.push(`l.location ILIKE $${paramCount}`);
         params.push(`%${location}%`);
       }
 
       if (search) {
         paramCount++;
-        whereConditions.push(`(l.title ILIKE $${paramCount} OR l.description ILIKE $${paramCount})`);
+        cteConditions.push(`(l.title ILIKE $${paramCount} OR l.description ILIKE $${paramCount})`);
         params.push(`%${search}%`);
       }
 
       if (scraper_name) {
         paramCount++;
-        whereConditions.push(`l.scraper_name = $${paramCount}`);
+        cteConditions.push(`l.scraper_name = $${paramCount}`);
         params.push(scraper_name);
       }
 
-      if (whereConditions.length > 0) {
-        const whereClause = whereConditions.join(' AND ');
+      if (cteConditions.length > 0) {
         query = query.replace(
-          'WHERE l.coordinates_lat IS NOT NULL AND l.coordinates_lng IS NOT NULL',
-          `WHERE l.coordinates_lat IS NOT NULL AND l.coordinates_lng IS NOT NULL AND ${whereClause}`
+          '-- CTE_WHERE_PLACEHOLDER',
+          `WHERE ${cteConditions.join(' AND ')}`
         );
+      } else {
+        query = query.replace('-- CTE_WHERE_PLACEHOLDER', '');
       }
 
       query += ` ORDER BY scraped_at DESC LIMIT 5000`;
@@ -134,10 +138,13 @@ module.exports = (pool) => {
 
   router.get('/api/categories', requireAuth, async (req, res) => {
     try {
+      const coordsWhere = req.query.include_all === 'true'
+        ? ''
+        : 'WHERE coordinates_lat IS NOT NULL AND coordinates_lng IS NOT NULL';
       const result = await pool.query(`
         SELECT DISTINCT category, COUNT(*) as count
         FROM latest_listings
-        WHERE coordinates_lat IS NOT NULL AND coordinates_lng IS NOT NULL
+        ${coordsWhere}
         GROUP BY category
         ORDER BY count DESC
       `);
@@ -206,6 +213,9 @@ module.exports = (pool) => {
 
   router.get('/api/stats', requireAuth, async (req, res) => {
     try {
+      const coordsWhere = req.query.include_all === 'true'
+        ? ''
+        : 'WHERE coordinates_lat IS NOT NULL AND coordinates_lng IS NOT NULL';
       const result = await pool.query(`
         SELECT
           COUNT(*) as total_listings,
@@ -215,7 +225,7 @@ module.exports = (pool) => {
           MAX(price) as max_price,
           COUNT(CASE WHEN is_top = true THEN 1 END) as top_listings
         FROM latest_listings
-        WHERE coordinates_lat IS NOT NULL AND coordinates_lng IS NOT NULL
+        ${coordsWhere}
       `);
       res.json(result.rows[0]);
     } catch (error) {

@@ -34,7 +34,7 @@ function renderNav(user) {
             </button>
             <div class="dropdown-menu" id="dropdown-menu">
                 <a href="/" class="menu-item ${path === '/' ? 'active' : ''}">
-                    <span class="menu-icon">&#x1f5fa;&#xfe0f;</span><span class="menu-text">Map</span>
+                    <span class="menu-icon">&#x1f5fa;&#xfe0f;</span><span class="menu-text">Listings</span>
                 </a>
                 <a href="/scrapers" class="menu-item ${path === '/scrapers' ? 'active' : ''}">
                     <span class="menu-icon">&#x1f916;</span><span class="menu-text">Scrapers</span>

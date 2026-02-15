@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bazos Listings Map</title>
+    <title>Magic Listings</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Bazos Listings Map</h1>
+            <h1>Magic Listings</h1>
             <div class="header-actions">
                 <div class="page-actions">
                     <div class="stats" id="stats">
@@ -54,8 +54,13 @@
             </div>
         </div>
 
+        <div class="view-toggle">
+            <button class="view-toggle-btn active" id="view-map" data-view="map">Map</button>
+            <button class="view-toggle-btn" id="view-list" data-view="list">List</button>
+        </div>
+
         <div class="main-content">
-            <div class="map-container">
+            <div class="map-container" id="map-container">
                 <div id="map"></div>
                 <div class="map-controls">
                     <button id="center-map">Center Map</button>
@@ -75,6 +80,26 @@
                         <div class="legend-marker red"></div>
                         <span>Changed Listings</span>
                     </div>
+                </div>
+            </div>
+
+            <div id="list-container" class="list-container" style="display: none;">
+                <div class="list-table-wrapper">
+                    <table id="listings-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-sort="title">Title <span class="sort-icon"></span></th>
+                                <th class="sortable" data-sort="price">Price <span class="sort-icon"></span></th>
+                                <th class="sortable" data-sort="category">Category <span class="sort-icon"></span></th>
+                                <th class="sortable" data-sort="location">Location <span class="sort-icon"></span></th>
+                                <th class="sortable" data-sort="scraper_name">Scraper <span class="sort-icon"></span></th>
+                                <th class="sortable" data-sort="date">Date <span class="sort-icon"></span></th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listings-tbody">
+                        </tbody>
+                    </table>
                 </div>
             </div>
 

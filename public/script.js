@@ -4,6 +4,9 @@ class ListingsMap {
         this.markers = [];
         this.markerCluster = null;
         this.currentListings = [];
+        this.viewMode = 'map';
+        this.sortColumn = 'date';
+        this.sortDirection = 'desc';
         this.filters = {
             category: '',
             priceMin: '',
@@ -51,7 +54,8 @@ class ListingsMap {
 
     async loadCategories() {
         try {
-            const response = await fetch('/api/categories', { credentials: 'include' });
+            const params = this.viewMode === 'list' ? '?include_all=true' : '';
+            const response = await fetch(`/api/categories${params}`, { credentials: 'include' });
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
             const categories = await response.json();
@@ -97,7 +101,8 @@ class ListingsMap {
 
     async loadStats() {
         try {
-            const response = await fetch('/api/stats', { credentials: 'include' });
+            const params = this.viewMode === 'list' ? '?include_all=true' : '';
+            const response = await fetch(`/api/stats${params}`, { credentials: 'include' });
             const stats = await response.json();
 
             document.getElementById('total-listings').textContent =
@@ -117,6 +122,7 @@ class ListingsMap {
             if (this.filters.location) params.append('location', this.filters.location);
             if (this.filters.search) params.append('search', this.filters.search);
             if (this.filters.scraper) params.append('scraper_name', this.filters.scraper);
+            if (this.viewMode === 'list') params.append('include_all', 'true');
 
             await new Promise(resolve => setTimeout(resolve, 0));
 
@@ -126,7 +132,11 @@ class ListingsMap {
             await new Promise(resolve => setTimeout(resolve, 0));
 
             this.currentListings = listings;
-            await this.updateMap(listings);
+            if (this.viewMode === 'list') {
+                this.renderListView(listings);
+            } else {
+                await this.updateMap(listings);
+            }
         } catch (error) {
             console.error('Error loading listings:', error);
         }
@@ -381,6 +391,118 @@ class ListingsMap {
         }
     }
 
+    async toggleView(mode) {
+        if (this.viewMode === mode) return;
+        this.viewMode = mode;
+
+        const mapContainer = document.getElementById('map-container');
+        const listContainer = document.getElementById('list-container');
+        const mapBtn = document.getElementById('view-map');
+        const listBtn = document.getElementById('view-list');
+
+        if (mode === 'list') {
+            mapContainer.style.display = 'none';
+            listContainer.style.display = 'flex';
+            mapBtn.classList.remove('active');
+            listBtn.classList.add('active');
+        } else {
+            listContainer.style.display = 'none';
+            mapContainer.style.display = '';
+            listBtn.classList.remove('active');
+            mapBtn.classList.add('active');
+            // Leaflet needs a resize nudge after being hidden
+            setTimeout(() => this.map.invalidateSize(), 0);
+        }
+
+        await Promise.all([
+            this.loadCategories(),
+            this.loadStats(),
+            this.loadListings()
+        ]);
+    }
+
+    renderListView(listings) {
+        let filtered = listings;
+        if (this.filters.changeFilter === 'changed') {
+            filtered = listings.filter(l =>
+                l.price_changed || l.description_changed ||
+                l.top_status_changed || l.title_changed
+            );
+        } else if (this.filters.changeFilter === 'top') {
+            filtered = listings.filter(l => l.is_top);
+        }
+
+        filtered = this.sortListings(filtered);
+
+        const tbody = document.getElementById('listings-tbody');
+        tbody.innerHTML = '';
+
+        filtered.forEach(listing => {
+            const tr = document.createElement('tr');
+            tr.addEventListener('click', () => this.showListingDetails(listing.id));
+
+            const hasChanges = listing.price_changed || listing.description_changed ||
+                listing.top_status_changed || listing.title_changed;
+            const hasCoords = listing.coordinates_lat && listing.coordinates_lng;
+
+            // Status badges
+            let statusHtml = '';
+            if (listing.is_top) statusHtml += '<span class="list-badge list-badge-top">TOP</span>';
+            if (hasChanges) statusHtml += '<span class="list-badge list-badge-changed">Changed</span>';
+            if (!hasCoords) statusHtml += '<span class="list-badge list-badge-no-coords">No coords</span>';
+
+            tr.innerHTML = `
+                <td title="${this.escapeHtml(listing.title)}">${this.escapeHtml(listing.title)}</td>
+                <td>${this.escapeHtml(listing.price_text || 'N/A')}</td>
+                <td>${this.escapeHtml(listing.category || '')}</td>
+                <td>${this.escapeHtml(listing.location || '')}</td>
+                <td>${this.escapeHtml(listing.scraper_name || '')}</td>
+                <td>${listing.date || ''}</td>
+                <td>${statusHtml}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    sortListings(listings) {
+        const col = this.sortColumn;
+        const dir = this.sortDirection === 'asc' ? 1 : -1;
+
+        return [...listings].sort((a, b) => {
+            let valA = a[col];
+            let valB = b[col];
+
+            if (col === 'price') {
+                valA = Number(valA) || 0;
+                valB = Number(valB) || 0;
+                return (valA - valB) * dir;
+            }
+
+            valA = (valA || '').toString().toLowerCase();
+            valB = (valB || '').toString().toLowerCase();
+            return valA.localeCompare(valB) * dir;
+        });
+    }
+
+    handleSort(column) {
+        if (this.sortColumn === column) {
+            this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            this.sortColumn = column;
+            this.sortDirection = 'asc';
+        }
+
+        // Update header classes
+        document.querySelectorAll('#listings-table th.sortable').forEach(th => {
+            th.classList.remove('sort-asc', 'sort-desc');
+            if (th.dataset.sort === this.sortColumn) {
+                th.classList.add(this.sortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
+            }
+        });
+
+        this.renderListView(this.currentListings);
+    }
+
     setupEventListeners() {
         document.getElementById('search-btn').addEventListener('click', () => this.applyFilters());
         document.getElementById('search-input').addEventListener('keypress', (e) => {
@@ -396,6 +518,16 @@ class ListingsMap {
         document.getElementById('center-map').addEventListener('click', () => this.centerMap());
         document.getElementById('toggle-clusters').addEventListener('click', () => this.toggleClusters());
         document.getElementById('close-details').addEventListener('click', () => this.hideListingDetails());
+
+        // View toggle
+        document.querySelectorAll('.view-toggle-btn').forEach(btn => {
+            btn.addEventListener('click', () => this.toggleView(btn.dataset.view));
+        });
+
+        // Column sorting
+        document.querySelectorAll('#listings-table th.sortable').forEach(th => {
+            th.addEventListener('click', () => this.handleSort(th.dataset.sort));
+        });
     }
 
     escapeHtml(text) {
