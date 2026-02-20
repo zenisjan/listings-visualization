@@ -3,56 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f7fafc">
     <title>Magic Listings</title>
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <div class="container">
         <header>
             <a href="/" class="logo-link">
-                <img src="/logo.svg" alt="" class="logo-icon">
+                <img src="/logo.svg" alt="" aria-hidden="true" class="logo-icon" width="36" height="36">
                 <span>Magic Listings</span>
             </a>
             <div class="header-actions">
                 <div class="page-actions">
                     <div class="stats" id="stats">
-                        <span id="total-listings">Loading...</span>
+                        <span id="total-listings">Loading&hellip;</span>
                     </div>
                 </div>
                 <div class="user-info" id="nav-container"></div>
             </div>
         </header>
 
-        <div class="controls">
+        <div class="controls" role="search">
             <div class="search-section">
-                <input type="text" id="search-input" placeholder="Search listings...">
+                <label for="search-input" class="sr-only">Search listings</label>
+                <input type="text" id="search-input" placeholder="Search listings&hellip;" autocomplete="off">
                 <button id="search-btn">Search</button>
             </div>
-            
+
             <div class="filters">
+                <label for="category-filter" class="sr-only">Category</label>
                 <select id="category-filter">
                     <option value="">All Categories</option>
                 </select>
-                
+
                 <div class="price-range">
-                    <input type="number" id="price-min" placeholder="Min Price">
-                    <span>-</span>
-                    <input type="number" id="price-max" placeholder="Max Price">
+                    <label for="price-min" class="sr-only">Minimum price</label>
+                    <input type="number" id="price-min" placeholder="Min price&hellip;" autocomplete="off">
+                    <span aria-hidden="true">-</span>
+                    <label for="price-max" class="sr-only">Maximum price</label>
+                    <input type="number" id="price-max" placeholder="Max price&hellip;" autocomplete="off">
                 </div>
-                
-                <input type="text" id="location-filter" placeholder="Location...">
-                
+
+                <label for="location-filter" class="sr-only">Location</label>
+                <input type="text" id="location-filter" placeholder="Location&hellip;" autocomplete="off">
+
+                <label for="scraper-filter" class="sr-only">Scraper</label>
                 <select id="scraper-filter">
                     <option value="">All Scrapers</option>
                 </select>
-                
+
+                <label for="change-filter" class="sr-only">Change filter</label>
                 <select id="change-filter">
                     <option value="">All Listings</option>
                     <option value="changed">Changed Listings Only</option>
                     <option value="top">TOP Listings Only</option>
                 </select>
-                
+
                 <button id="clear-filters">Clear Filters</button>
             </div>
         </div>
@@ -62,12 +72,12 @@
             <button class="view-toggle-btn" id="view-list" data-view="list">List</button>
         </div>
 
-        <div class="main-content">
+        <div class="main-content" id="main-content">
             <div class="map-container" id="map-container">
-                <div id="map"></div>
+                <div id="map" role="application" aria-label="Listings map"></div>
                 <div class="map-controls">
-                    <button id="center-map">Center Map</button>
-                    <button id="toggle-clusters">Toggle Clusters</button>
+                    <button id="center-map" aria-label="Center map to show all markers">Center Map</button>
+                    <button id="toggle-clusters" aria-label="Toggle marker clustering">Toggle Clusters</button>
                 </div>
                 <div class="map-legend">
                     <h5>Legend:</h5>
@@ -86,7 +96,7 @@
                 </div>
             </div>
 
-            <div id="list-container" class="list-container" style="display: none;">
+            <div id="list-container" class="list-container hidden">
                 <div class="list-table-wrapper">
                     <table id="listings-table">
                         <thead>
@@ -108,12 +118,12 @@
 
             <div class="listing-details" id="listing-details" style="display: none;">
                 <div class="details-header">
-                    <h3 id="details-title"></h3>
-                    <button id="close-details">×</button>
+                    <h2 id="details-title"></h2>
+                    <button id="close-details" aria-label="Close details">&times;</button>
                 </div>
                 <div class="details-content">
                     <div class="details-image">
-                        <img id="details-image" src="" alt="">
+                        <img id="details-image" src="" alt="Listing photo" width="300" height="250" loading="lazy">
                     </div>
                     <div class="details-info">
                         <p><strong>Price:</strong> <span id="details-price"></span></p>

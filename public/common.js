@@ -29,8 +29,8 @@ function renderNav(user) {
     nav.innerHTML = `
         <span id="user-name">${escapeHtml(user.name)}</span>
         <div class="hamburger-menu">
-            <button class="hamburger-btn" id="hamburger-btn">
-                <span></span><span></span><span></span>
+            <button class="hamburger-btn" id="hamburger-btn" aria-label="Menu" aria-expanded="false">
+                <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
             </button>
             <div class="dropdown-menu" id="dropdown-menu">
                 <a href="/" class="menu-item ${path === '/' ? 'active' : ''}">
@@ -99,14 +99,25 @@ function initHamburgerMenu() {
     if (hamburgerBtn && dropdownMenu) {
         hamburgerBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            hamburgerBtn.classList.toggle('active');
+            const isOpen = hamburgerBtn.classList.toggle('active');
             dropdownMenu.classList.toggle('show');
+            hamburgerBtn.setAttribute('aria-expanded', isOpen);
         });
 
         document.addEventListener('click', (e) => {
             if (!hamburgerBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
                 hamburgerBtn.classList.remove('active');
                 dropdownMenu.classList.remove('show');
+                hamburgerBtn.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && dropdownMenu.classList.contains('show')) {
+                hamburgerBtn.classList.remove('active');
+                dropdownMenu.classList.remove('show');
+                hamburgerBtn.setAttribute('aria-expanded', 'false');
+                hamburgerBtn.focus();
             }
         });
     }
@@ -166,7 +177,7 @@ function openProfileModal() {
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Edit Profile</h3>
-                <button class="close" id="close-profile">&times;</button>
+                <button class="close" id="close-profile" aria-label="Close">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="error-message" id="profile-modal-error" style="display: none;"></div>
@@ -181,20 +192,20 @@ function openProfileModal() {
                     <div class="form-group">
                         <label for="profileEmail">Email Address</label>
                         <input type="email" id="profileEmail" value="${escapeHtml(user.email)}"
-                               placeholder="your@email.com">
+                               placeholder="your@email.com" autocomplete="email" spellcheck="false">
                     </div>
 
                     <div class="form-group">
                         <label for="profileNewPassword">New Password</label>
                         <input type="password" id="profileNewPassword"
-                               placeholder="Leave blank to keep current">
+                               placeholder="Leave blank to keep current" autocomplete="new-password">
                         <span class="form-hint">Leave blank to keep current password</span>
                     </div>
 
                     <div class="form-group">
                         <label for="profileCurrentPassword">Current Password *</label>
                         <input type="password" id="profileCurrentPassword" required
-                               placeholder="Required to save changes">
+                               placeholder="Required to save changes" autocomplete="current-password">
                     </div>
 
                     <div class="form-actions">
@@ -212,6 +223,9 @@ function openProfileModal() {
     document.getElementById('cancel-profile').addEventListener('click', closeProfileModal);
     modal.addEventListener('click', (e) => {
         if (e.target === modal) closeProfileModal();
+    });
+    modal.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeProfileModal();
     });
     document.getElementById('profileForm').addEventListener('submit', handleProfileSubmit);
 }

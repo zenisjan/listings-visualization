@@ -25,6 +25,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             closeEditUserModal();
         }
     });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeAddUserModal();
+            closeEditUserModal();
+        }
+    });
 });
 
 async function loadUsers() {
@@ -35,11 +42,11 @@ async function loadUsers() {
             renderUsers();
         } else {
             document.getElementById('users-content').innerHTML =
-                '<div class="loading-text">Error loading users</div>';
+                '<div class="loading-text">Error loading users.</div>';
         }
     } catch (error) {
         document.getElementById('users-content').innerHTML =
-            '<div class="loading-text">Error loading users</div>';
+            '<div class="loading-text">Error loading users.</div>';
     }
 }
 
@@ -73,8 +80,8 @@ function renderUsers() {
                         <td>${escapeHtml(user.email)}</td>
                         <td><span class="role-badge role-${escapeHtml(user.role)}">${escapeHtml(user.role)}</span></td>
                         <td><span class="status-${user.is_active ? 'active' : 'inactive'}">${user.is_active ? 'Active' : 'Inactive'}</span></td>
-                        <td>${new Date(user.created_at).toLocaleDateString()}</td>
-                        <td>${user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never'}</td>
+                        <td>${new Intl.DateTimeFormat().format(new Date(user.created_at))}</td>
+                        <td>${user.last_login ? new Intl.DateTimeFormat().format(new Date(user.last_login)) : 'Never'}</td>
                         <td>
                             <button class="btn btn-sm" data-edit-user="${user.id}">
                                 Edit

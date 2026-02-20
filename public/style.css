@@ -30,6 +30,42 @@
     --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.15);
     --shadow-xl: 0 10px 30px rgba(0, 0, 0, 0.3);
+    --focus-ring: 0 0 0 2px var(--color-accent);
+}
+
+/* Skip navigation link */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--color-primary);
+    color: white;
+    padding: 8px 16px;
+    z-index: 9999;
+    border-radius: 0 0 var(--radius-md) 0;
+    transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
+/* Screen-reader only utility */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Hidden utility */
+.hidden {
+    display: none !important;
 }
 
 * {
@@ -73,6 +109,12 @@ header {
     font-size: 1.5rem;
     font-weight: 600;
     transition: opacity 0.2s ease;
+    border-radius: var(--radius-md);
+}
+
+.logo-link:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
 }
 
 .logo-link:hover {
@@ -139,12 +181,17 @@ header {
     text-decoration: none;
     padding: 8px 12px;
     border-radius: 6px;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .user-info a:hover {
     background: var(--color-bg);
     color: var(--color-text-heading);
+}
+
+.user-info a:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
 }
 
 /* Hamburger Menu Styles */
@@ -169,6 +216,11 @@ header {
 
 .hamburger-btn:hover {
     background: var(--color-bg);
+}
+
+.hamburger-btn:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
 }
 
 .hamburger-btn span {
@@ -205,7 +257,7 @@ header {
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
-    transition: all 0.3s ease;
+    transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
     margin-top: 8px;
 }
 
@@ -226,9 +278,14 @@ header {
     width: 100%;
     text-align: left;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
     font-size: 14px;
     font-weight: 500;
+}
+
+.menu-item:focus-visible {
+    outline: none;
+    box-shadow: inset var(--focus-ring);
 }
 
 .menu-item:hover {
@@ -269,10 +326,16 @@ header {
     border-radius: 6px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
     text-decoration: none;
     display: inline-block;
     font-size: 14px;
+    touch-action: manipulation;
+}
+
+.btn:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
 }
 
 .btn-secondary {
@@ -321,13 +384,13 @@ header h1 {
     border: 2px solid var(--color-border);
     border-radius: 10px;
     font-size: 16px;
-    transition: all 0.3s ease;
+    transition: border-color 0.2s ease;
 }
 
-.search-section input:focus {
+.search-section input:focus-visible {
     outline: none;
-    border-color: var(--color-text-secondary);
-    box-shadow: none;
+    border-color: var(--color-accent);
+    box-shadow: var(--focus-ring);
 }
 
 .search-section button {
@@ -338,11 +401,17 @@ header h1 {
     border-radius: 8px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease;
+    touch-action: manipulation;
 }
 
 .search-section button:hover {
     background: var(--color-primary-dark);
+}
+
+.search-section button:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
 }
 
 .filters {
@@ -358,14 +427,14 @@ header h1 {
     border: 2px solid var(--color-border);
     border-radius: 8px;
     font-size: 14px;
-    transition: all 0.3s ease;
+    transition: border-color 0.2s ease;
 }
 
-.filters select:focus,
-.filters input:focus {
+.filters select:focus-visible,
+.filters input:focus-visible {
     outline: none;
-    border-color: var(--color-text-secondary);
-    box-shadow: none;
+    border-color: var(--color-accent);
+    box-shadow: var(--focus-ring);
 }
 
 .price-range {
@@ -391,11 +460,17 @@ header h1 {
     border-radius: 6px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease;
+    touch-action: manipulation;
 }
 
 #clear-filters:hover {
     background: var(--color-danger-dark);
+}
+
+#clear-filters:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
 }
 
 /* View Toggle */
@@ -413,7 +488,14 @@ header h1 {
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    touch-action: manipulation;
+}
+
+.view-toggle-btn:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+    z-index: 1;
 }
 
 .view-toggle-btn:first-child {
@@ -585,12 +667,18 @@ th.sort-desc .sort-icon::after {
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: background-color 0.2s ease;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    touch-action: manipulation;
 }
 
 .map-controls button:hover {
     background: white;
+}
+
+.map-controls button:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring), 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 /* Make cluster numbers more visible */
@@ -716,16 +804,17 @@ th.sort-desc .sort-icon::after {
     border-radius: 15px 15px 0 0;
 }
 
-.details-header h3 {
+.details-header h2 {
     font-size: 1.5rem;
     font-weight: 400;
     color: black;
+    text-wrap: balance;
 }
 
 #close-details {
     background: none;
     border: none;
-    color: white;
+    color: var(--color-text-muted);
     font-size: 2rem;
     cursor: pointer;
     padding: 0;
@@ -735,11 +824,18 @@ th.sort-desc .sort-icon::after {
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    transition: all 0.3s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    touch-action: manipulation;
 }
 
 #close-details:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--color-bg);
+    color: var(--color-text-heading);
+}
+
+#close-details:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
 }
 
 .details-content {
@@ -803,11 +899,16 @@ th.sort-desc .sort-icon::after {
     text-decoration: none;
     border-radius: 6px;
     font-weight: 500;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease;
 }
 
 .view-listing-btn:hover {
     background: var(--color-primary-dark);
+}
+
+.view-listing-btn:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
 }
 
 /* Responsive design */
@@ -895,14 +996,22 @@ th.sort-desc .sort-icon::after {
     background: var(--color-primary);
     color: white;
     text-decoration: none;
+    border: none;
     border-radius: 4px;
     font-size: 12px;
     font-weight: 500;
-    transition: all 0.2s ease;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    touch-action: manipulation;
 }
 
 .view-details-btn:hover {
     background: var(--color-primary-dark);
+}
+
+.view-details-btn:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
 }
 
 /* Change indicators */
@@ -968,7 +1077,7 @@ th.sort-desc .sort-icon::after {
     padding: 15px;
     margin-bottom: 15px;
     margin-left: 15px;
-    transition: all 0.3s ease;
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .history-item:hover {
@@ -1226,10 +1335,23 @@ td {
     cursor: pointer;
     background: none;
     border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s ease;
+    touch-action: manipulation;
 }
 
 .close:hover {
     opacity: 0.7;
+}
+
+.close:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px white;
 }
 
 .modal-body {
@@ -1257,11 +1379,12 @@ td {
     transition: border-color 0.2s ease;
 }
 
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
+.form-group input:focus-visible,
+.form-group select:focus-visible,
+.form-group textarea:focus-visible {
     outline: none;
-    border-color: var(--color-text-secondary);
+    border-color: var(--color-accent);
+    box-shadow: var(--focus-ring);
 }
 
 .form-group textarea {
@@ -1393,12 +1516,18 @@ tr:hover {
     font-size: 16px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease;
     margin-bottom: 20px;
+    touch-action: manipulation;
 }
 
 .login-btn:hover {
     background: var(--color-primary-dark);
+}
+
+.login-btn:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
 }
 
 .login-btn:disabled {
@@ -1487,4 +1616,42 @@ tr:hover {
 
 .status-scheduled {
     color: var(--color-info);
+}
+
+/* Tabular numbers for prices and stats */
+.stats,
+#listings-table td:nth-child(2),
+.details-info #details-price,
+.details-info #details-views,
+.history-details {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Heading typography */
+h1, h2, h3, h4, h5, h6 {
+    text-wrap: balance;
+}
+
+/* Modal overscroll containment */
+.modal {
+    overscroll-behavior: contain;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .history-item:hover {
+        transform: none;
+    }
+
+    .dropdown-menu {
+        transition: none;
+    }
 }

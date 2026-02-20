@@ -22,6 +22,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (e.target === document.getElementById('scraper-modal')) closeModal();
     });
 
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeModal();
+    });
+
     document.getElementById('scraper-form').addEventListener('submit', saveScraper);
     document.getElementById('run-scrapers-btn').addEventListener('click', runAllScrapers);
 });
@@ -64,7 +68,7 @@ function renderScrapers() {
             <tbody>
                 ${scrapers.map(scraper => {
                     const inputStr = typeof scraper.input === 'object' ? JSON.stringify(scraper.input) : scraper.input;
-                    const preview = inputStr.length > 50 ? inputStr.substring(0, 50) + '...' : inputStr;
+                    const preview = inputStr.length > 50 ? inputStr.substring(0, 50) + '\u2026' : inputStr;
                     return `
                     <tr>
                         <td>

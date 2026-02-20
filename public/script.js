@@ -104,8 +104,9 @@ class ListingsMap {
             const response = await fetch(`/api/stats${params}`, { credentials: 'include' });
             const stats = await response.json();
 
+            const total = new Intl.NumberFormat().format(stats.total_listings);
             document.getElementById('total-listings').textContent =
-                `${stats.total_listings} listings | ${stats.total_categories} categories`;
+                `${total} listings | ${stats.total_categories} categories`;
         } catch (error) {
             console.error('Error loading stats:', error);
         }
@@ -264,10 +265,10 @@ class ListingsMap {
             const descriptionText = listing.full_description || listing.description || 'No description available';
             document.getElementById('details-description').textContent = descriptionText;
 
-            const lastScraped = new Date(listing.scraped_at).toLocaleDateString('en-US', {
+            const lastScraped = new Intl.DateTimeFormat(undefined, {
                 year: 'numeric', month: 'short', day: 'numeric',
                 hour: '2-digit', minute: '2-digit'
-            });
+            }).format(new Date(listing.scraped_at));
             document.getElementById('details-last-scraped').textContent = lastScraped;
 
             document.getElementById('details-url').href = listing.url;
@@ -320,10 +321,10 @@ class ListingsMap {
                     `<span class="history-change-item">${change}</span>`
                 ).join('')}</div>` : '';
 
-            const formattedDate = new Date(version.scraped_at).toLocaleDateString('en-US', {
+            const formattedDate = new Intl.DateTimeFormat(undefined, {
                 year: 'numeric', month: 'short', day: 'numeric',
                 hour: '2-digit', minute: '2-digit'
-            });
+            }).format(new Date(version.scraped_at));
 
             historyItem.innerHTML = `
                 <div class="history-header">
@@ -400,13 +401,13 @@ class ListingsMap {
         const listBtn = document.getElementById('view-list');
 
         if (mode === 'list') {
-            mapContainer.style.display = 'none';
-            listContainer.style.display = 'flex';
+            mapContainer.classList.add('hidden');
+            listContainer.classList.remove('hidden');
             mapBtn.classList.remove('active');
             listBtn.classList.add('active');
         } else {
-            listContainer.style.display = 'none';
-            mapContainer.style.display = '';
+            listContainer.classList.add('hidden');
+            mapContainer.classList.remove('hidden');
             listBtn.classList.remove('active');
             mapBtn.classList.add('active');
             // Leaflet needs a resize nudge after being hidden
@@ -526,6 +527,16 @@ class ListingsMap {
         // Column sorting
         document.querySelectorAll('#listings-table th.sortable').forEach(th => {
             th.addEventListener('click', () => this.handleSort(th.dataset.sort));
+        });
+
+        // Escape key to close details panel
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const details = document.getElementById('listing-details');
+                if (details && details.style.display !== 'none') {
+                    this.hideListingDetails();
+                }
+            }
         });
     }
 

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f7fafc">
     <title>Scrapers Management - Magic Listings</title>
     <link rel="stylesheet" href="/style.css">
 </head>
@@ -11,7 +12,7 @@
         <header>
             <div class="header-left">
                 <a href="/" class="logo-link">
-                    <img src="/logo.svg" alt="" class="logo-icon">
+                    <img src="/logo.svg" alt="" aria-hidden="true" class="logo-icon" width="28" height="28">
                     <span>Magic Listings</span>
                 </a>
                 <h1>Scrapers Management</h1>
@@ -31,7 +32,7 @@
                 <div class="status-info">
                     <div class="status-item">
                         <span class="status-label">Status:</span>
-                        <span id="scheduler-running-status" class="status-value">Loading...</span>
+                        <span id="scheduler-running-status" class="status-value">Loading&hellip;</span>
                     </div>
                     <div class="status-item">
                         <span class="status-label">Last Run:</span>
@@ -52,7 +53,7 @@
                 <h2>Configured Scrapers</h2>
             </div>
             <div id="scrapers-content">
-                <div class="loading-text">Loading scrapers...</div>
+                <div class="loading-text">Loading scrapers&hellip;</div>
             </div>
         </div>
     </div>
@@ -62,7 +63,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="modal-title">Add New Scraper</h3>
-                <button class="close" id="close-modal">&times;</button>
+                <button class="close" id="close-modal" aria-label="Close">&times;</button>
             </div>
             <div class="modal-body">
                 <form id="scraper-form">

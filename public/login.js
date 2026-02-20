@@ -11,7 +11,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     successDiv.style.display = 'none';
 
     loginBtn.disabled = true;
-    loginBtn.textContent = 'Signing In...';
+    loginBtn.textContent = 'Signing in\u2026';
 
     try {
         const response = await fetch('/api/login', {
@@ -24,7 +24,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
         const data = await response.json();
 
         if (response.ok) {
-            successDiv.textContent = 'Login successful! Redirecting...';
+            successDiv.textContent = 'Login successful! Redirecting\u2026';
             successDiv.style.display = 'block';
             setTimeout(() => { window.location.href = '/'; }, 1000);
         } else {
